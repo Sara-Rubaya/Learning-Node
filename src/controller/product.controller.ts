@@ -1,13 +1,25 @@
 import type { IncomingMessage, ServerResponse } from "http";
 import { readProduct } from "../service/product.service";
+import type { IProducts } from "../types/product.types";
 
-export const productController = (
+
+export const productController = async(
     req : IncomingMessage, 
     res : ServerResponse
 )=>{
     const url = req.url;
     const method = req.method;
 
+    //  /products =>c/products/1  => ['', 'products', '1']
+
+    const urlParts = url?.split("/");
+    // console.log(urlParts);
+    const id = 
+    urlParts && urlParts[1] === "products"  ?  Number(urlParts[2]) : null;
+    console.log("This is the actual id : ",id);
+
+
+    // Get All Products
      if(url === "/products" && method === "GET"){
 
         // const products = [
@@ -25,5 +37,18 @@ export const productController = (
             data: products
         }),
     );
+     }else if(method === "GET" && id !== null){   //Get Single Product 
+        const products = readProduct();
+        const product = products.find((p : IProducts)=>p.id === id);
+        // console.log(product);
+
+        res.writeHead(200,{"content-type" : "application/json"});
+        res.end(
+            JSON.stringify({
+            message: "Product retrived successfully!",
+            data: product,
+        }),
+    );
+
      }
 };
